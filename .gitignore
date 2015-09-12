@@ -1,0 +1,6 @@
+/.settings/
+/.project
+/.pydevproject
+*.pyc
+/src/Flask_CacheControl.egg-info/
+/dist/
