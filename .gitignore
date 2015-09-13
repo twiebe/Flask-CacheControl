@@ -3,4 +3,5 @@
 /.pydevproject
 *.pyc
 /src/Flask_CacheControl.egg-info/
+/build/
 /dist/
