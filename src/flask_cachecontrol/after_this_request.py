@@ -66,7 +66,6 @@ class AfterThisRequestResponseProcessor(object):
 
     #----------------------------------------------------------------------
     def _execute_callback(self):
-        # TODO: error handling
         self._callback(self._response)
 
 
