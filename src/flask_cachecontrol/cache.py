@@ -19,7 +19,9 @@ from .callback import SetCacheControlHeadersFromTimedeltaCallback, SetCacheContr
 #----------------------------------------------------------------------
 def cache_for(**timedelta_kw):
     """
-    Set Cache-Control headers by timedelta kw
+    Set Cache-Control headers and Expires-header.
+
+    Expects a timedelta instance.
     """
     max_age_timedelta = timedelta(**timedelta_kw)
 
@@ -38,7 +40,17 @@ def cache_for(**timedelta_kw):
 #----------------------------------------------------------------------
 def cache(*cache_control_items, **cache_control_kw):
     """
-    Set Cache-Control headers by kw or item-list
+    Set Cache-Control headers.
+
+    Expects keyword arguments and/or an item list.
+
+    Each pair is used to set Flask Response.cache_control attributes,
+    where the key is the attribute name and the value is its value.
+
+    Use True as value for attributes without values.
+
+    In case of an invalid attribute, CacheControlAttributeInvalidError
+    will be thrown.
     """
     cache_control_kw.update(cache_control_items)
 
@@ -58,6 +70,9 @@ def cache(*cache_control_items, **cache_control_kw):
 def dont_cache():
     """
     Set Cache-Control headers for no caching
+
+    Will generate proxy-revalidate, no-cache, no-store, must-revalidate,
+    max-age=0.
     """
     def decorate_func(func):
         @wraps(func)
