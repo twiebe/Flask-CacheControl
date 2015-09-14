@@ -23,14 +23,17 @@ from flask.ext.cachecontrol import (
 flask_cache_control = FlaskCacheControl()
 flask_cache_control.init_app(app)
 
+@app.route('/')
 @cache_for(hours=3)
 def index_view():
     return render_template('index_template')
 
+@app.route('/stats')
 @cache(max_age=3600, public=True)
 def stats_view():
     return render_template('stats_template')
 
+@app.route('/dashboard')
 @dont_cache()
 def dashboard_view():
     return render_template('dashboard_template')
