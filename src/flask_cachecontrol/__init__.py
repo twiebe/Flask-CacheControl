@@ -21,4 +21,4 @@
 from .cache import cache, cache_for, dont_cache, FlaskCacheControl
 from .error import FlaskCacheControlError, CacheControlAttributeInvalidError
 
-__version__ = '0.1.1'
+__version__ = '0.1.2'
