@@ -36,7 +36,7 @@ class SetCacheControlHeadersCallback(CallbackBase):
     #----------------------------------------------------------------------
     def __call__(self, response):
         cache_control = response.cache_control
-        for attr_name, value in self._cache_control_kw.iteritems():
+        for attr_name, value in self._cache_control_kw.items():
             if not hasattr(cache_control, attr_name):
                 raise CacheControlAttributeInvalidError(attr_name)
             setattr(cache_control, attr_name, value)
