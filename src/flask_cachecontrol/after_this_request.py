@@ -33,7 +33,6 @@ class CallbackRegistry(object):
     def __iter__(self):
         while self._callbacks:
             yield self._callbacks.pop(0)
-        raise StopIteration()
 
 
 ########################################################################
