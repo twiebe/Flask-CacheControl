@@ -39,7 +39,6 @@ class ResponseIsSuccessful(OnlyIfEvaluatorBase):
         return 200 <= response.status_code < 300
 
 
-#----------------------------------------------------------------------
 def cache_for(only_if=ResponseIsSuccessful, **timedelta_kw):
     """
     Set Cache-Control headers and Expires-header.
@@ -66,7 +65,6 @@ def cache_for(only_if=ResponseIsSuccessful, **timedelta_kw):
     return decorate_func
 
 
-#----------------------------------------------------------------------
 def cache(*cache_control_items, only_if=ResponseIsSuccessful, **cache_control_kw):
     """
     Set Cache-Control headers.
@@ -101,7 +99,6 @@ def cache(*cache_control_items, only_if=ResponseIsSuccessful, **cache_control_kw
     return decorate_func
 
 
-#----------------------------------------------------------------------
 def dont_cache(only_if=ResponseIsSuccessful):
     """
     Set Cache-Control headers for no caching
@@ -127,24 +124,18 @@ def dont_cache(only_if=ResponseIsSuccessful):
     return decorate_func
 
 
-########################################################################
 class FlaskCacheControl(object):
-
-    #----------------------------------------------------------------------
     def __init__(self, app=None):
         self._app = app
         if app:
             self.init_app(app)
 
-    #----------------------------------------------------------------------
     def init_app(self, app):
         self._register_request_handler(app)
         self._register_response_handler(app)
 
-    #----------------------------------------------------------------------
     def _register_request_handler(self, app):
         app.before_request(AfterThisRequestRequestHandler())
 
-    #----------------------------------------------------------------------
     def _register_response_handler(self, app):
         app.after_request(AfterThisRequestResponseHandler())
