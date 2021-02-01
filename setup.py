@@ -26,6 +26,7 @@ setup(
     install_requires=[
         'Flask',
     ],
+    python_requires='>=3.3',
     classifiers=[
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
