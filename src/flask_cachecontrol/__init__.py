@@ -18,7 +18,7 @@
     :license: BSD, see LICENSE for more details.
 """
 
-from .cache import cache, cache_for, dont_cache, FlaskCacheControl
+from .cache import cache, cache_for, dont_cache, FlaskCacheControl, Always, ResponseIsSuccessful
 from .error import FlaskCacheControlError, CacheControlAttributeInvalidError
 
-__version__ = '0.1.3'
+__version__ = '0.2.0'

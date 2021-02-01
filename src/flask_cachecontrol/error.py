@@ -8,19 +8,14 @@
 """
 
 
-########################################################################
 class FlaskCacheControlError(Exception):
     pass
 
 
-########################################################################
 class CacheControlAttributeInvalidError(FlaskCacheControlError):
-
-    #----------------------------------------------------------------------
     def __init__(self, attr_name):
         self.attr_name = attr_name
 
-    #----------------------------------------------------------------------
     def __str__(self):
         return 'Attribute {!r} not a valid Flask Cache-Control parameter'.format(
             self.attr_name)
