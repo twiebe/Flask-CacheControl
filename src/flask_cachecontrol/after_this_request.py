@@ -6,16 +6,18 @@
     :copyright: (c) 2015 by Thomas Wiebe.
     :license: BSD, see LICENSE for more details.
 """
+from abc import ABCMeta, abstractmethod
 
 from flask import g
 
 
-class CallbackBase(object):
+class CallbackBase(metaclass=ABCMeta):
+    @abstractmethod
     def __call__(self, response):
-        raise NotImplementedError()
+        pass
 
 
-class CallbackRegistry(object):
+class CallbackRegistry:
     def __init__(self):
         self._callbacks = []
 
@@ -27,12 +29,12 @@ class CallbackRegistry(object):
             yield self._callbacks.pop(0)
 
 
-class AfterThisRequestCallbackRegistryProvider(object):
+class AfterThisRequestCallbackRegistryProvider:
     def provide(self):
         return g.after_this_request_callback_registry
 
 
-class AfterThisRequestResponseProcessor(object):
+class AfterThisRequestResponseProcessor:
     def __init__(self, response):
         self._response = response
         self._callback_registry = None
@@ -51,7 +53,7 @@ class AfterThisRequestResponseProcessor(object):
         self._callback(self._response)
 
 
-class AfterThisRequestResponseHandler(object):
+class AfterThisRequestResponseHandler:
     def __call__(self, response):
         self._process_response(response)
         return response
@@ -61,7 +63,7 @@ class AfterThisRequestResponseHandler(object):
         processor.process()
 
 
-class AfterThisRequestRequestHandler(object):
+class AfterThisRequestRequestHandler:
     def __call__(self):
         if not self._callback_registry_set_up_on_g():
             self._setup_callback_registry_on_g()

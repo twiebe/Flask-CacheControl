@@ -124,7 +124,7 @@ def dont_cache(only_if=ResponseIsSuccessful):
     return decorate_func
 
 
-class FlaskCacheControl(object):
+class FlaskCacheControl:
     def __init__(self, app=None):
         self._app = app
         if app:
