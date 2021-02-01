@@ -38,3 +38,9 @@ def stats_view():
 def dashboard_view():
     return render_template('dashboard_template')
 ```
+
+## Breaking Changes:
+
+### v0.2.0
+- By default, cache control headers are only applied to successful requests. (status code `2xx`) This behaviour can be customized by providing `only_if=` as a kw to all caching decorators.
+- Requires python 3.3 or higher
