@@ -15,7 +15,7 @@ Varnish Cache, do the caching for you.
 
 ## Example:
 ```python
-from flask.ext.cachecontrol import (
+from flask_cachecontrol import (
     FlaskCacheControl,
     cache,
     cache_for,
