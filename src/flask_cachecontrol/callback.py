@@ -56,7 +56,7 @@ class SetCacheControlHeadersForNoCachingCallback(CallbackBase):
 class SetVaryHeaderCallback(CallbackBase):
     def __init__(self, vary):
         # generate string version once for object lifetime
-        self._vary_str = ','.join(vary)
+        self._vary_header = ','.join(vary) if vary is not None else None
 
     def _process_response(self, response):
-        response.vary = self._vary_str
+        response.vary = self._vary_header

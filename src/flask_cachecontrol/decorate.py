@@ -31,21 +31,13 @@ def cache_for(only_if=ResponseIsSuccessful, vary=None, **timedelta_kw):
     """
     max_age_timedelta = timedelta(**timedelta_kw)
     cache_callback = only_if(SetCacheControlHeadersFromTimedeltaCallback(max_age_timedelta))
-    vary_callback = SetVaryHeaderCallback(vary) \
-        if vary is not None \
-        else None
+    vary_callback = SetVaryHeaderCallback(vary)
 
     def decorate_func(func):
         @wraps(func)
         def decorate_func_call(*a, **kw):
             flask.after_this_request(cache_callback)
-            if vary_callback is not None:
-                # according to MDN, the Vary header should be returned on
-                # all responses for a given url. therefor do this for
-                # all status codes.
-                #
-                # see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Vary
-                flask.after_this_request(vary_callback)
+            flask.after_this_request(vary_callback)
             return func(*a, **kw)
         return decorate_func_call
     return decorate_func
@@ -74,21 +66,13 @@ def cache(*cache_control_items, only_if=ResponseIsSuccessful, vary=None, **cache
     """
     cache_control_kw.update(cache_control_items)
     cache_callback = only_if(SetCacheControlHeadersCallback(**cache_control_kw))
-    vary_callback = SetVaryHeaderCallback(vary) \
-        if vary is not None \
-        else None
+    vary_callback = SetVaryHeaderCallback(vary)
 
     def decorate_func(func):
         @wraps(func)
         def decorate_func_call(*a, **kw):
             flask.after_this_request(cache_callback)
-            if vary_callback is not None:
-                # according to MDN, the Vary header should be returned on
-                # all responses for a given url. therefor do this for
-                # all status codes.
-                #
-                # see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Vary
-                flask.after_this_request(vary_callback)
+            flask.after_this_request(vary_callback)
             return func(*a, **kw)
         return decorate_func_call
     return decorate_func
