@@ -10,8 +10,8 @@ from abc import ABCMeta, abstractmethod
 from datetime import timedelta
 from functools import wraps
 
-from .after_this_request import AfterThisRequestResponseHandler, AfterThisRequestRequestHandler, \
-    AfterThisRequestCallbackRegistryProvider
+import flask
+
 from .callback import SetCacheControlHeadersCallback, SetVaryHeaderCallback
 from .callback import SetCacheControlHeadersFromTimedeltaCallback, SetCacheControlHeadersForNoCachingCallback
 
@@ -22,7 +22,8 @@ class OnlyIfEvaluatorBase(metaclass=ABCMeta):
 
     def __call__(self, response):
         if self._response_qualifies(response):
-            self._callback(response)
+            return self._callback(response)
+        return response
 
     @abstractmethod
     def _response_qualifies(self, response):
@@ -66,25 +67,25 @@ def cache_for(only_if=ResponseIsSuccessful, vary=None, **timedelta_kw):
     Optionally takes vary as list of headers. If given. Vary-header is
     returned for all requests - successful or failed.
     """
-    registry_provider = AfterThisRequestCallbackRegistryProvider()
     max_age_timedelta = timedelta(**timedelta_kw)
     cache_callback = SetCacheControlHeadersFromTimedeltaCallback(max_age_timedelta)
     if only_if is not None:
         cache_callback = only_if(cache_callback)
-    vary_callback = SetVaryHeaderCallback(vary) if vary is not None else None
+    vary_callback = SetVaryHeaderCallback(vary) \
+        if vary is not None \
+        else None
 
     def decorate_func(func):
         @wraps(func)
         def decorate_func_call(*a, **kw):
-            registry = registry_provider.provide()
-            registry.add(cache_callback)
+            flask.after_this_request(cache_callback)
             if vary_callback is not None:
                 # according to MDN, the Vary header should be returned on
                 # all responses for a given url. therefor do this for
                 # all status codes.
                 #
                 # see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Vary
-                registry.add(vary_callback)
+                flask.after_this_request(vary_callback)
             return func(*a, **kw)
         return decorate_func_call
     return decorate_func
@@ -111,25 +112,25 @@ def cache(*cache_control_items, only_if=ResponseIsSuccessful, vary=None, **cache
     Optionally takes vary as list of headers. If given. Vary-header is
     returned for all requests - successful or failed.
     """
-    registry_provider = AfterThisRequestCallbackRegistryProvider()
     cache_control_kw.update(cache_control_items)
     cache_callback = SetCacheControlHeadersCallback(**cache_control_kw)
     if only_if is not None:
         cache_callback = only_if(cache_callback)
-    vary_callback = SetVaryHeaderCallback(vary) if vary is not None else None
+    vary_callback = SetVaryHeaderCallback(vary) \
+        if vary is not None \
+        else None
 
     def decorate_func(func):
         @wraps(func)
         def decorate_func_call(*a, **kw):
-            registry = registry_provider.provide()
-            registry.add(cache_callback)
+            flask.after_this_request(cache_callback)
             if vary_callback is not None:
                 # according to MDN, the Vary header should be returned on
                 # all responses for a given url. therefor do this for
                 # all status codes.
                 #
                 # see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Vary
-                registry.add(vary_callback)
+                flask.after_this_request(vary_callback)
             return func(*a, **kw)
         return decorate_func_call
     return decorate_func
@@ -146,7 +147,6 @@ def dont_cache(only_if=ResponseIsSuccessful):
     Provide only_if=None to apply to all requests or supply custom
     evaluator for customized behaviour.
     """
-    registry_provider = AfterThisRequestCallbackRegistryProvider()
     cache_callback = SetCacheControlHeadersForNoCachingCallback()
     if only_if is not None:
         cache_callback = only_if(cache_callback)
@@ -154,25 +154,7 @@ def dont_cache(only_if=ResponseIsSuccessful):
     def decorate_func(func):
         @wraps(func)
         def decorate_func_call(*a, **kw):
-            registry = registry_provider.provide()
-            registry.add(cache_callback)
+            flask.after_this_request(cache_callback)
             return func(*a, **kw)
         return decorate_func_call
     return decorate_func
-
-
-class FlaskCacheControl:
-    def __init__(self, app=None):
-        self._app = app
-        if app:
-            self.init_app(app)
-
-    def init_app(self, app):
-        self._register_request_handler(app)
-        self._register_response_handler(app)
-
-    def _register_request_handler(self, app):
-        app.before_request(AfterThisRequestRequestHandler())
-
-    def _register_response_handler(self, app):
-        app.after_request(AfterThisRequestResponseHandler())

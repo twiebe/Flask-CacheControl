@@ -25,14 +25,12 @@ decorators, the `Vary` HTTP header is returned with the response.
 ## Example
 ```python
 from flask_cachecontrol import (
-    FlaskCacheControl,
     cache,
     cache_for,
     dont_cache,
     Always, 
     ResponseIsSuccessfulOrRedirect)
-flask_cache_control = FlaskCacheControl()
-flask_cache_control.init_app(app)
+
 
 @app.route('/')
 @cache_for(hours=3)

@@ -1,11 +1,9 @@
 import pytest
 from flask import Flask, Response
-from flask_cachecontrol import FlaskCacheControl, cache_for, cache, dont_cache, ResponseIsSuccessful, Always
+from flask_cachecontrol import cache_for, cache, dont_cache, ResponseIsSuccessful, Always
 from flask_cachecontrol.cache import ResponseIsSuccessfulOrRedirect
 
 app = Flask(__name__)
-
-flask_cache_control = FlaskCacheControl(app)
 
 CACHE_SECONDS = 300
 VARY_HEADERS = ['User-Agent', 'Referer']
