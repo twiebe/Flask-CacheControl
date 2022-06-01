@@ -20,9 +20,9 @@ def cache_for(only_if=ResponseIsSuccessful, vary=None, **timedelta_kw):
     """
     Set Cache-Control headers and Expires-header.
 
-    Expects a timedelta instance.
+    Takes timedelta instantiation kw args.
 
-    By default only applies to successful requests (2xx status code).
+    By default, only applies to successful requests (2xx status code).
     Provide only_if=None to apply to all requests or supply custom
     evaluator for customized behaviour.
 
@@ -67,7 +67,7 @@ def cache(*cache_control_items, only_if=ResponseIsSuccessful, vary=None, **cache
     In case of an invalid attribute, CacheControlAttributeInvalidError
     will be thrown.
 
-    By default only applies to successful requests (2xx status code).
+    By default, only applies to successful requests (2xx status code).
     Provide only_if=None to apply to all requests or supply custom
     evaluator for customized behaviour.
 
@@ -105,7 +105,7 @@ def dont_cache(only_if=ResponseIsSuccessful):
     Will generate proxy-revalidate, no-cache, no-store, must-revalidate,
     max-age=0.
 
-    By default only applies to successful requests (2xx status code).
+    By default, only applies to successful requests (2xx status code).
     Provide only_if=None to apply to all requests or supply custom
     evaluator for customized behaviour.
     """
