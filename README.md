@@ -1,25 +1,36 @@
 # Flask-CacheControl
 
-## Description:
+## Description
 
-A light-weight library to conveniently set Cache-Control
+A light-weight library to conveniently set `Cache-Control`
 headers on the response. Decorate view functions with
-cache_for, cache, or dont_cache decorators. Makes use of
-Flask response.cache_control.
+`cache_for`, `cache`, or `dont_cache` decorators. Makes use of
+Flask `response.cache_control`.
 
 This extension does not provide any caching of its own. Its sole
-purpose is to set Cache-Control and related HTTP headers on the
+purpose is to set `Cache-Control` and related HTTP headers on the
 response, so that clients, intermediary proxies or reverse proxies
-in your jurisdiction which evaluate Cache-Control headers, such as
+in your jurisdiction which evaluate `Cache-Control` headers, such as
 Varnish Cache, do the caching for you.
 
-## Example:
+By default, `Cache-Control` headers are only appended in case of a
+successful response (status code 2xx). This behaviour can be controlled
+with the `only_if` argument to `cache_for` and `cache` decorators. Included
+options are `Always`, `ResponseIsSuccessful`, `ResponseIsSuccessfulOrRedirect`. Custom behaviour can be implemented by subclassing `OnlyIfEvaluatorBase`.
+
+If the `vary` keyword argument is given to `cache_for` or `cache` 
+decorators, the `Vary` HTTP header is returned with the response.
+`Vary` headers are appended independent of response status code.
+
+## Example
 ```python
 from flask_cachecontrol import (
     FlaskCacheControl,
     cache,
     cache_for,
-    dont_cache)
+    dont_cache,
+    Always, 
+    ResponseIsSuccessfulOrRedirect)
 flask_cache_control = FlaskCacheControl()
 flask_cache_control.init_app(app)
 
@@ -28,8 +39,13 @@ flask_cache_control.init_app(app)
 def index_view():
     return render_template('index_template')
 
+@app.route('/users')
+@cache_for(minutes=5, only_if=ResponseIsSuccessfulOrRedirect)
+def users_view():
+    return render_template('user_template')
+
 @app.route('/stats')
-@cache(max_age=3600, public=True)
+@cache(max_age=3600, public=True, only_if=Always, vary=['User-Agent', 'Referer'])
 def stats_view():
     return render_template('stats_template')
 
@@ -39,7 +55,7 @@ def dashboard_view():
     return render_template('dashboard_template')
 ```
 
-## Breaking Changes:
+## Breaking Changes
 
 ### v0.2.0
 - By default, cache control headers are only applied to successful requests. (status code `2xx`) This behaviour can be customized by providing `only_if=` as a kw to all caching decorators.

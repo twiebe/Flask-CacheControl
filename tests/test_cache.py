@@ -7,22 +7,32 @@ app = Flask(__name__)
 
 flask_cache_control = FlaskCacheControl(app)
 
+CACHE_SECONDS = 300
+VARY_HEADERS = ['User-Agent', 'Referer']
+VARY_HEADERS_STR = ','.join(VARY_HEADERS)
+
 
 @app.route('/cache_for/on_success/<int:status_code>')
-@cache_for(only_if=ResponseIsSuccessful, seconds=300)
+@cache_for(only_if=ResponseIsSuccessful, seconds=CACHE_SECONDS)
 def view_cache_for_on_success(status_code):
     return Response(status=status_code)
 
 
 @app.route('/cache_for/on_success_or_redirect/<int:status_code>')
-@cache_for(only_if=ResponseIsSuccessfulOrRedirect, seconds=300)
+@cache_for(only_if=ResponseIsSuccessfulOrRedirect, seconds=CACHE_SECONDS)
 def view_cache_for_on_success_or_redirect(status_code):
     return Response(status=status_code)
 
 
 @app.route('/cache_for/always/<int:status_code>')
-@cache_for(only_if=Always, seconds=300)
+@cache_for(only_if=Always, seconds=CACHE_SECONDS)
 def view_cache_for_always(status_code):
+    return Response(status=status_code)
+
+
+@app.route('/cache_for/vary/<int:status_code>')
+@cache_for(only_if=ResponseIsSuccessful, seconds=CACHE_SECONDS, vary=VARY_HEADERS)
+def view_cache_for_on_success_with_vary(status_code):
     return Response(status=status_code)
 
 
@@ -68,6 +78,12 @@ def view_cache_on_success_only_if_none(status_code):
     return Response(status=status_code)
 
 
+@app.route('/cache/vary/<int:status_code>')
+@cache(no_store=True, only_if=ResponseIsSuccessful, vary=VARY_HEADERS)
+def view_cache_on_success_with_vary(status_code):
+    return Response(status=status_code)
+
+
 @pytest.fixture
 def client():
     app.config['TESTING'] = True
@@ -79,12 +95,12 @@ def client():
 class TestCacheForAlways:
     def test_success(self, client):
         rv = client.get('/cache_for/always/200')
-        assert 'Cache-Control' in rv.headers and rv.headers['Cache-Control'] == 'max-age=300'
+        assert 'Cache-Control' in rv.headers and rv.headers['Cache-Control'] == f'max-age={CACHE_SECONDS}'
         assert 'Expires' in rv.headers
 
-    def test_failure(self, client):
+    def test_client_error(self, client):
         rv = client.get('/cache_for/always/404')
-        assert 'Cache-Control' in rv.headers and rv.headers['Cache-Control'] == 'max-age=300'
+        assert 'Cache-Control' in rv.headers and rv.headers['Cache-Control'] == f'max-age={CACHE_SECONDS}'
         assert 'Expires' in rv.headers
 
 
@@ -97,7 +113,7 @@ class TestCacheForOnlyOnSuccess:
         rv = client.get('/cache_for/on_success/300')
         assert 'Cache-Control' not in rv.headers
 
-    def test_failure(self, client):
+    def test_client_error(self, client):
         rv = client.get('/cache_for/on_success/404')
         assert 'Cache-Control' not in rv.headers
 
@@ -111,9 +127,31 @@ class TestCacheForOnlyOnSuccessOrRedirect:
         rv = client.get('/cache_for/on_success_or_redirect/300')
         assert 'Cache-Control' in rv.headers
 
-    def test_failure(self, client):
+    def test_client_error(self, client):
         rv = client.get('/cache_for/on_success_or_redirect/404')
         assert 'Cache-Control' not in rv.headers
+
+
+class TestCacheForVary:
+    def test_success_wo_vary(self, client):
+        rv = client.get('/cache_for/on_success/200')
+        assert 'Vary' not in rv.headers
+
+    def test_success(self, client):
+        rv = client.get('/cache_for/vary/200')
+        assert rv.headers.get('Vary') == VARY_HEADERS_STR
+
+    def test_redirect(self, client):
+        rv = client.get('/cache_for/vary/300')
+        assert rv.headers.get('Vary') == VARY_HEADERS_STR
+
+    def test_client_error(self, client):
+        rv = client.get('/cache_for/vary/404')
+        assert rv.headers.get('Vary') == VARY_HEADERS_STR
+
+    def test_server_error(self, client):
+        rv = client.get('/cache_for/vary/500')
+        assert rv.headers.get('Vary') == VARY_HEADERS_STR
 
 
 class TestDontCacheAlways:
@@ -125,7 +163,7 @@ class TestDontCacheAlways:
         rv = client.get('/dont_cache/always/300')
         assert 'Cache-Control' in rv.headers and 'no-cache' in rv.headers['Cache-Control']
 
-    def test_failure(self, client):
+    def test_client_error(self, client):
         rv = client.get('/dont_cache/always/404')
         assert 'Cache-Control' in rv.headers and 'no-cache' in rv.headers['Cache-Control']
 
@@ -139,7 +177,7 @@ class TestDontCacheOnlyOnSuccess:
         rv = client.get('/dont_cache/on_success/300')
         assert 'Cache-Control' not in rv.headers
 
-    def test_failure(self, client):
+    def test_client_error(self, client):
         rv = client.get('/dont_cache/on_success/404')
         assert 'Cache-Control' not in rv.headers
 
@@ -153,7 +191,7 @@ class TestDontCacheOnlyOnSuccessOrRedirect:
         rv = client.get('/dont_cache/on_success_or_redirect/300')
         assert 'Cache-Control' in rv.headers and 'no-cache' in rv.headers['Cache-Control']
 
-    def test_failure(self, client):
+    def test_client_error(self, client):
         rv = client.get('/dont_cache/on_success_or_redirect/404')
         assert 'Cache-Control' not in rv.headers
 
@@ -171,7 +209,7 @@ class TestCacheAlways:
                and 'no-store' in rv.headers['Cache-Control'] \
                and 'no-cache' not in rv.headers['Cache-Control']
 
-    def test_failure(self, client):
+    def test_client_error(self, client):
         rv = client.get('/cache/always/404')
         assert 'Cache-Control' in rv.headers \
                and 'no-store' in rv.headers['Cache-Control'] \
@@ -189,7 +227,7 @@ class TestCacheOnlyOnSuccess:
         rv = client.get('/cache/on_success/300')
         assert 'Cache-Control' not in rv.headers
 
-    def test_failure(self, client):
+    def test_client_error(self, client):
         rv = client.get('/cache/on_success/404')
         assert 'Cache-Control' not in rv.headers
 
@@ -207,7 +245,7 @@ class TestCacheOnlyOnSuccessOrRedirect:
                and 'no-store' in rv.headers['Cache-Control'] \
                and 'no-cache' not in rv.headers['Cache-Control']
 
-    def test_failure(self, client):
+    def test_client_error(self, client):
         rv = client.get('/cache/on_success_or_redirect/404')
         assert 'Cache-Control' not in rv.headers
 
@@ -225,8 +263,30 @@ class TestCacheAlwaysOnlyIfNone:
                and 'no-store' in rv.headers['Cache-Control'] \
                and 'no-cache' not in rv.headers['Cache-Control']
 
-    def test_failure(self, client):
+    def test_client_error(self, client):
         rv = client.get('/cache/always_only_if_none/404')
         assert 'Cache-Control' in rv.headers \
                and 'no-store' in rv.headers['Cache-Control'] \
                and 'no-cache' not in rv.headers['Cache-Control']
+
+
+class TestCacheVary:
+    def test_success_wo_vary(self, client):
+        rv = client.get('/cache/on_success/200')
+        assert 'Vary' not in rv.headers
+
+    def test_success(self, client):
+        rv = client.get('/cache/vary/200')
+        assert rv.headers.get('Vary') == VARY_HEADERS_STR
+
+    def test_redirect(self, client):
+        rv = client.get('/cache/vary/300')
+        assert rv.headers.get('Vary') == VARY_HEADERS_STR
+
+    def test_client_error(self, client):
+        rv = client.get('/cache/vary/404')
+        assert rv.headers.get('Vary') == VARY_HEADERS_STR
+
+    def test_server_error(self, client):
+        rv = client.get('/cache/vary/500')
+        assert rv.headers.get('Vary') == VARY_HEADERS_STR

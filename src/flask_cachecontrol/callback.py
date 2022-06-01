@@ -41,3 +41,12 @@ class SetCacheControlHeadersForNoCachingCallback(CallbackBase):
         response.cache_control.no_store = True
         response.cache_control.must_revalidate = True
         response.cache_control.proxy_revalidate = True
+
+
+class SetVaryHeaderCallback(CallbackBase):
+    def __init__(self, vary):
+        # generate string version once for object lifetime
+        self._vary_str = ','.join(vary)
+
+    def __call__(self, response):
+        response.vary = self._vary_str
