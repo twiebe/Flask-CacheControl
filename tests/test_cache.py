@@ -70,12 +70,6 @@ def view_cache_on_success_or_redirect(status_code):
     return Response(status=status_code)
 
 
-@app.route('/cache/always_only_if_none/<int:status_code>')
-@cache(no_store=True, only_if=None)
-def view_cache_on_success_only_if_none(status_code):
-    return Response(status=status_code)
-
-
 @app.route('/cache/vary/<int:status_code>')
 @cache(no_store=True, only_if=ResponseIsSuccessful, vary=VARY_HEADERS)
 def view_cache_on_success_with_vary(status_code):
@@ -246,26 +240,6 @@ class TestCacheOnlyOnSuccessOrRedirect:
     def test_client_error(self, client):
         rv = client.get('/cache/on_success_or_redirect/404')
         assert 'Cache-Control' not in rv.headers
-
-
-class TestCacheAlwaysOnlyIfNone:
-    def test_success(self, client):
-        rv = client.get('/cache/always_only_if_none/200')
-        assert 'Cache-Control' in rv.headers \
-               and 'no-store' in rv.headers['Cache-Control'] \
-               and 'no-cache' not in rv.headers['Cache-Control']
-
-    def test_redirect(self, client):
-        rv = client.get('/cache/always_only_if_none/300')
-        assert 'Cache-Control' in rv.headers \
-               and 'no-store' in rv.headers['Cache-Control'] \
-               and 'no-cache' not in rv.headers['Cache-Control']
-
-    def test_client_error(self, client):
-        rv = client.get('/cache/always_only_if_none/404')
-        assert 'Cache-Control' in rv.headers \
-               and 'no-store' in rv.headers['Cache-Control'] \
-               and 'no-cache' not in rv.headers['Cache-Control']
 
 
 class TestCacheVary:

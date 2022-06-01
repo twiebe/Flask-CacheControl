@@ -23,16 +23,14 @@ def cache_for(only_if=ResponseIsSuccessful, vary=None, **timedelta_kw):
     Takes timedelta instantiation kw args.
 
     By default, only applies to successful requests (2xx status code).
-    Provide only_if=None to apply to all requests or supply custom
+    Provide only_if=Always to apply to all requests or supply custom
     evaluator for customized behaviour.
 
     Optionally takes vary as list of headers. If given. Vary-header is
     returned for all requests - successful or failed.
     """
     max_age_timedelta = timedelta(**timedelta_kw)
-    cache_callback = SetCacheControlHeadersFromTimedeltaCallback(max_age_timedelta)
-    if only_if is not None:
-        cache_callback = only_if(cache_callback)
+    cache_callback = only_if(SetCacheControlHeadersFromTimedeltaCallback(max_age_timedelta))
     vary_callback = SetVaryHeaderCallback(vary) \
         if vary is not None \
         else None
@@ -68,16 +66,14 @@ def cache(*cache_control_items, only_if=ResponseIsSuccessful, vary=None, **cache
     will be thrown.
 
     By default, only applies to successful requests (2xx status code).
-    Provide only_if=None to apply to all requests or supply custom
+    Provide only_if=Always to apply to all requests or supply custom
     evaluator for customized behaviour.
 
     Optionally takes vary as list of headers. If given. Vary-header is
     returned for all requests - successful or failed.
     """
     cache_control_kw.update(cache_control_items)
-    cache_callback = SetCacheControlHeadersCallback(**cache_control_kw)
-    if only_if is not None:
-        cache_callback = only_if(cache_callback)
+    cache_callback = only_if(SetCacheControlHeadersCallback(**cache_control_kw))
     vary_callback = SetVaryHeaderCallback(vary) \
         if vary is not None \
         else None
@@ -106,12 +102,10 @@ def dont_cache(only_if=ResponseIsSuccessful):
     max-age=0.
 
     By default, only applies to successful requests (2xx status code).
-    Provide only_if=None to apply to all requests or supply custom
+    Provide only_if=Always to apply to all requests or supply custom
     evaluator for customized behaviour.
     """
-    cache_callback = SetCacheControlHeadersForNoCachingCallback()
-    if only_if is not None:
-        cache_callback = only_if(cache_callback)
+    cache_callback = only_if(SetCacheControlHeadersForNoCachingCallback())
 
     def decorate_func(func):
         @wraps(func)
