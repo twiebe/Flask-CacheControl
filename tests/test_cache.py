@@ -1,7 +1,7 @@
 import pytest
 from flask import Flask, Response
-from flask_cachecontrol import cache_for, cache, dont_cache, ResponseIsSuccessful, Always
-from flask_cachecontrol.cache import ResponseIsSuccessfulOrRedirect
+from flask_cachecontrol import cache_for, cache, dont_cache, ResponseIsSuccessful, ResponseIsSuccessfulOrRedirect, \
+    Always
 
 app = Flask(__name__)
 
