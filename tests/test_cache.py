@@ -1,6 +1,7 @@
 import pytest
 from flask import Flask, Response
 from flask_cachecontrol import FlaskCacheControl, cache_for, cache, dont_cache, ResponseIsSuccessful, Always
+from flask_cachecontrol.cache import ResponseIsSuccessfulOrRedirect
 
 app = Flask(__name__)
 
@@ -10,6 +11,12 @@ flask_cache_control = FlaskCacheControl(app)
 @app.route('/cache_for/on_success/<int:status_code>')
 @cache_for(only_if=ResponseIsSuccessful, seconds=300)
 def view_cache_for_on_success(status_code):
+    return Response(status=status_code)
+
+
+@app.route('/cache_for/on_success_or_redirect/<int:status_code>')
+@cache_for(only_if=ResponseIsSuccessfulOrRedirect, seconds=300)
+def view_cache_for_on_success_or_redirect(status_code):
     return Response(status=status_code)
 
 
@@ -74,10 +81,28 @@ def test_cache_for_on_success_works_on_success(client):
     assert 'Cache-Control' in rv.headers
 
 
-def test_cache_for_on_success_works_not_on_failure(client):
+def test_cache_for_on_success_works_not_on_redirect(client):
     rv = client.get('/cache_for/on_success/300')
     assert 'Cache-Control' not in rv.headers
+
+
+def test_cache_for_on_success_works_not_on_failure(client):
     rv = client.get('/cache_for/on_success/404')
+    assert 'Cache-Control' not in rv.headers
+
+
+def test_cache_for_on_success_or_redirect_works_on_success(client):
+    rv = client.get('/cache_for/on_success_or_redirect/200')
+    assert 'Cache-Control' in rv.headers
+
+
+def test_cache_for_on_success_or_redirect_works_on_redirect(client):
+    rv = client.get('/cache_for/on_success_or_redirect/300')
+    assert 'Cache-Control' in rv.headers
+
+
+def test_cache_for_on_success_or_redirect_works_not_on_failure(client):
+    rv = client.get('/cache_for/on_success_or_redirect/404')
     assert 'Cache-Control' not in rv.headers
 
 

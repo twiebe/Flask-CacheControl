@@ -30,13 +30,27 @@ class OnlyIfEvaluatorBase(metaclass=ABCMeta):
 
 
 class Always(OnlyIfEvaluatorBase):
+    """
+    Matches all responses.
+    """
     def _response_qualifies(self, response):
         return True
 
 
 class ResponseIsSuccessful(OnlyIfEvaluatorBase):
+    """
+    Matches responses with a 2xx status code
+    """
     def _response_qualifies(self, response):
         return 200 <= response.status_code < 300
+
+
+class ResponseIsSuccessfulOrRedirect(OnlyIfEvaluatorBase):
+    """
+    Matches responses with 2xx and 3xx status codes.
+    """
+    def _response_qualifies(self, response):
+        return 200 <= response.status_code < 400
 
 
 def cache_for(only_if=ResponseIsSuccessful, **timedelta_kw):
