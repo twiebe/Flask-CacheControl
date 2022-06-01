@@ -63,17 +63,17 @@ def cache_for(only_if=ResponseIsSuccessful, **timedelta_kw):
     Provide only_if=None to apply to all requests or supply custom
     evaluator for customized behaviour.
     """
+    registry_provider = AfterThisRequestCallbackRegistryProvider()
     max_age_timedelta = timedelta(**timedelta_kw)
+    cache_callback = SetCacheControlHeadersFromTimedeltaCallback(max_age_timedelta)
+    if only_if is not None:
+        cache_callback = only_if(cache_callback)
 
     def decorate_func(func):
         @wraps(func)
         def decorate_func_call(*a, **kw):
-            callback = SetCacheControlHeadersFromTimedeltaCallback(max_age_timedelta)
-            if only_if is not None:
-                callback = only_if(callback)
-            registry_provider = AfterThisRequestCallbackRegistryProvider()
             registry = registry_provider.provide()
-            registry.add(callback)
+            registry.add(cache_callback)
             return func(*a, **kw)
         return decorate_func_call
     return decorate_func
@@ -97,17 +97,17 @@ def cache(*cache_control_items, only_if=ResponseIsSuccessful, **cache_control_kw
     Provide only_if=None to apply to all requests or supply custom
     evaluator for customized behaviour.
     """
+    registry_provider = AfterThisRequestCallbackRegistryProvider()
     cache_control_kw.update(cache_control_items)
+    cache_callback = SetCacheControlHeadersCallback(**cache_control_kw)
+    if only_if is not None:
+        cache_callback = only_if(cache_callback)
 
     def decorate_func(func):
         @wraps(func)
         def decorate_func_call(*a, **kw):
-            callback = SetCacheControlHeadersCallback(**cache_control_kw)
-            if only_if is not None:
-                callback = only_if(callback)
-            registry_provider = AfterThisRequestCallbackRegistryProvider()
             registry = registry_provider.provide()
-            registry.add(callback)
+            registry.add(cache_callback)
             return func(*a, **kw)
         return decorate_func_call
     return decorate_func
@@ -124,15 +124,16 @@ def dont_cache(only_if=ResponseIsSuccessful):
     Provide only_if=None to apply to all requests or supply custom
     evaluator for customized behaviour.
     """
+    registry_provider = AfterThisRequestCallbackRegistryProvider()
+    cache_callback = SetCacheControlHeadersForNoCachingCallback()
+    if only_if is not None:
+        cache_callback = only_if(cache_callback)
+
     def decorate_func(func):
         @wraps(func)
         def decorate_func_call(*a, **kw):
-            callback = SetCacheControlHeadersForNoCachingCallback()
-            if only_if is not None:
-                callback = only_if(callback)
-            registry_provider = AfterThisRequestCallbackRegistryProvider()
             registry = registry_provider.provide()
-            registry.add(callback)
+            registry.add(cache_callback)
             return func(*a, **kw)
         return decorate_func_call
     return decorate_func
