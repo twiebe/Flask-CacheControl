@@ -14,7 +14,7 @@ setup(
     url='https://github.com/twiebe/Flask-CacheControl',
     license='BSD',
     author='Thomas Wiebe',
-    author_email='code@heimblick.net',
+    author_email='thomas+code@heimblick.net',
     description='Set Cache-Control headers on the Flask response',
     long_description=open('README.md', 'r').read(),
     long_description_content_type="text/markdown",
