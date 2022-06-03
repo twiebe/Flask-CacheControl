@@ -24,12 +24,16 @@ decorators, the `Vary` HTTP header is returned with the response.
 
 ## Example
 ```python
+from flask import Flask, render_template
 from flask_cachecontrol import (
     cache,
     cache_for,
     dont_cache,
     Always, 
     ResponseIsSuccessfulOrRedirect)
+
+
+app = Flask(__name__)
 
 
 @app.route('/')
