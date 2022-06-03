@@ -22,4 +22,4 @@ from .decorate import cache, cache_for, dont_cache
 from .evaluator import Always, ResponseIsSuccessful, ResponseIsSuccessfulOrRedirect
 from .error import FlaskCacheControlError, CacheControlAttributeInvalidError
 
-__version__ = '0.2.1'
+__version__ = '0.3.0'
