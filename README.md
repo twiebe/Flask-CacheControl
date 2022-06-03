@@ -57,8 +57,24 @@ def dashboard_view():
     return render_template('dashboard_template')
 ```
 
-## Breaking Changes
+## Changelog
+### 0.3.0
+- Add `only_if` evaluator for _successful or redirect (2xx, 3xx)_ responses (#7)
+- Support **Vary**-headers (#6)
+- Improve instantiation of callbacks and registry provider
+- **BREAKING**: Simplify instantiation and hooking into flask response handling (#8)
+  - No more need to instantiate `FlaskCacheControl` for Flask app.
+- **BREAKING**: Drop support for `only_if=None`
+  - Use more explicit `only_if=Always` instead
+- **BREAKING**: Restructure modules
+  - Direct imports from modules inside the package need to be adapted.
+- Improve test structuring
+- Fix flask instantiation and import in example
+
+### v0.2.1
+- Fix import statement in example
 
 ### v0.2.0
-- By default, cache control headers are only applied to successful requests. (status code `2xx`) This behaviour can be customized by providing `only_if=` as a kw to all caching decorators.
-- Requires python 3.3 or higher
+- Add tests
+- **BREAKING**: By default, cache control headers are only applied to successful requests. (status code `2xx`) This behaviour can be customized by providing `only_if=` as a kw to all caching decorators.
+- **BREAKING**: Requires python 3.3 or higher
